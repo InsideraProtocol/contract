@@ -15,9 +15,9 @@ interface ICourt {
         string ipfsData,
         uint256 createdAt
     );
-    event Staked(uint256 courtId, uint256 stakeAmount, address staker);
-    event GuardianVoted(uint256 courtId, uint8 vote, address voter);
-    event InsiderVoted(uint256 courtId, uint8 vote, address voter);
+    event Staked(uint256 courtId, uint256 stakeAmount, address guardian);
+    event GuardianVoted(uint256 courtId, uint8 vote, address guardian);
+    event InsiderVoted(uint256 courtId, uint8 vote, address insider);
     event CourtSettled(uint256 courtId, address winner, address loser);
     event CourtUnSettled(uint256 courtId);
 

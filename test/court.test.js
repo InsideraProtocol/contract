@@ -84,6 +84,11 @@ describe("Court", async () => {
       .setGovernanceToken(tokenAddress)
       .should.be.rejectedWith("Ownable: caller is not the owner");
 
-    await courtInstance.connect(account2).setGovernanceToken(tokenAddress);
+    await courtInstance.connect(account1).setGovernanceToken(tokenAddress);
+    assert.equal(
+      await courtInstance.governanceToken(),
+      tokenAddress,
+      "token address is incorrect"
+    );
   });
 });
