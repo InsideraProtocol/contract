@@ -33,7 +33,7 @@ contract AccessRestriction is
     }
 
     /// @inheritdoc IAccessRestriction
-    function initialize(address _deployer) external override initializer {
+    function initialize(address _deployer) public override initializer {
         __UUPSUpgradeable_init();
 
         AccessControlUpgradeable.__AccessControl_init();

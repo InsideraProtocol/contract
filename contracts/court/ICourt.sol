@@ -21,7 +21,7 @@ interface ICourt {
     event CourtSettled(uint256 courtId, address winner, address loser);
     event CourtUnSettled(uint256 courtId);
 
-    function initialize() external;
+    function initialize(address _accessRestrictionAddress) external;
 
     function setGovernanceToken(address _token) external;
 

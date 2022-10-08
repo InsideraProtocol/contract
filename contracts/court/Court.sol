@@ -5,7 +5,6 @@ pragma solidity ^0.8.6;
 import "./ICourt.sol";
 
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
@@ -13,8 +12,10 @@ import "../insider/IInsider.sol";
 import "../soulbond/ISoulbound.sol";
 import "../soulbond/AttributeLib.sol";
 
+import "../access/IAccessRestriction.sol";
+
 /** @title Court Contract */
-contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
+contract Court is UUPSUpgradeable, ICourt {
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
     struct Court {
@@ -48,6 +49,7 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
 
     IInsider public insiderContract;
     ISoulbound public soulboundContract;
+    IAccessRestriction public accessRestriction;
 
     CountersUpgradeable.Counter public courtId;
 
@@ -56,9 +58,24 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
         _disableInitializers();
     }
 
-    function initialize() public override initializer {
+    /** NOTE modifier to check msg.sender has admin role */
+    modifier onlyAdmin() {
+        accessRestriction.ifAdmin(msg.sender);
+        _;
+    }
+
+    function initialize(address _accessRestrictionAddress)
+        public
+        override
+        initializer
+    {
         __UUPSUpgradeable_init();
-        __Ownable_init();
+
+        IAccessRestriction candidateContract = IAccessRestriction(
+            _accessRestrictionAddress
+        );
+        require(candidateContract.isAccessRestriction());
+        accessRestriction = candidateContract;
 
         isCourt = true;
     }
@@ -69,7 +86,7 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
         _;
     }
 
-    function setGovernanceToken(address _token) external override onlyOwner {
+    function setGovernanceToken(address _token) external override onlyAdmin {
         governanceToken = _token;
 
         emit GovernanceTokenSet(_token);
@@ -285,6 +302,6 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
     function _authorizeUpgrade(address newImplementation)
         internal
         override
-        onlyOwner
+        onlyAdmin
     {}
 }

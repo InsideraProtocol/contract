@@ -36,6 +36,7 @@ contract Soulbound is ERC721Upgradeable, ISoulbound, UUPSUpgradeable {
         _;
     }
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
@@ -44,7 +45,7 @@ contract Soulbound is ERC721Upgradeable, ISoulbound, UUPSUpgradeable {
     function initialize(
         address _accessRestrictionAddress,
         string calldata baseURI_
-    ) external override initializer {
+    ) public override initializer {
         isSoulbound = true;
 
         __UUPSUpgradeable_init();
@@ -79,8 +80,6 @@ contract Soulbound is ERC721Upgradeable, ISoulbound, UUPSUpgradeable {
 
         tokenId_.increment();
     }
-
-    function getTokenAttribute(uint256 _tokenId) external {}
 
     /// @inheritdoc ISoulbound
     function exists(uint256 _tokenId) external view override returns (bool) {

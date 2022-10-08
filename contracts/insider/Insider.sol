@@ -32,8 +32,14 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
         _disableInitializers();
     }
 
-    function initialize() public initializer {
+    function initialize(address _accessRestrictionAddress) public initializer {
         __UUPSUpgradeable_init();
+
+        IAccessRestriction candidateContract = IAccessRestriction(
+            _accessRestrictionAddress
+        );
+        require(candidateContract.isAccessRestriction());
+        accessRestriction = candidateContract;
 
         isInsider = true;
     }
