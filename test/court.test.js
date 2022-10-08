@@ -34,7 +34,7 @@ describe("Court", async () => {
     };
   }
 
-  it.only("test createCourt", async () => {
+  it("test createCourt", async () => {
     let { account1, account2, account3, account4, account5, courtInstance } =
       await loadFixture(handleDeploymentsAndSetAddress);
 
@@ -69,135 +69,21 @@ describe("Court", async () => {
     assert.equal(Number(court.coinPrice), Number(coinPrice), "");
     assert.equal(Number(court.duration), duration, "");
     assert.equal(court.ipfsData, ipfsData, "");
-
-    // await carbonRetirementsStorageInstance
-    //   .connect(account1)
-    //   .addHelperContract(zeroAddress).should.be.rejected;
-
-    // //-------------work successfully
-    // let tx1 = await carbonRetirementsStorageInstance
-    //   .connect(account1)
-    //   .addHelperContract(account2.address);
-
-    // assert.equal(
-    //   await carbonRetirementsStorageInstance.isHelperContract(account2.address),
-    //   true,
-    //   "addHelperContract func is incorrect"
-    // );
-
-    // await expect(tx1)
-    //   .to.emit(carbonRetirementsStorageInstance, "HelperAdded")
-    //   .withArgs(account2.address);
-
-    // await carbonRetirementsStorageInstance
-    //   .connect(account1)
-    //   .addHelperContract(account2.address)
-    //   .should.be.rejectedWith(
-    //     CarbonRetirementsStorageErrorMsg.CRS_HELPER_ALREADY_ADDED
-    //   );
-
-    // //-----------test removeHelperContract
-
-    // //-------------reject(only Owner)
-
-    // await carbonRetirementsStorageInstance
-    //   .connect(account2)
-    //   .removeHelperContract(account2.address)
-    //   .should.be.rejectedWith(OwnableErrorMsg.CALLER_NOT_OWNER);
-
-    // //-------reject (Helper is not on the list)
-    // await carbonRetirementsStorageInstance
-    //   .connect(account1)
-    //   .removeHelperContract(account3.address)
-    //   .should.be.rejectedWith(
-    //     CarbonRetirementsStorageErrorMsg.CRS_HELPER_NOT_IN_LIST
-    //   );
-
-    // //-------------work successfully
-    // let tx2 = await carbonRetirementsStorageInstance
-    //   .connect(account1)
-    //   .removeHelperContract(account2.address);
-
-    // await expect(tx2)
-    //   .to.emit(carbonRetirementsStorageInstance, "HelperRemoved")
-    //   .withArgs(account2.address);
-
-    // assert.equal(
-    //   await carbonRetirementsStorageInstance.isHelperContract(account2.address),
-    //   false,
-    //   "removeHelperContract func is incorrect"
-    // );
   });
 
-  it("test carbonRetired", async () => {
-    let {
-      account1,
-      account2,
-      account3,
-      account4,
-      account5,
-      carbonRetirementsStorageInstance,
-    } = await loadFixture(handleDeploymentsAndSetAddress);
-
-    await carbonRetirementsStorageInstance
-      .connect(account1)
-      .addHelperContract(account2.address);
-
-    //-------reject (caller not helper)
-    await carbonRetirementsStorageInstance
-      .connect(account3)
-      .carbonRetired(account4.address, ethers.utils.parseUnits("1", "ether"))
-      .should.be.rejectedWith(
-        CarbonRetirementsStorageErrorMsg.CRS_CALLER_NOT_HELPER
-      );
-
-    //-------reject (caller not helper)
-    await carbonRetirementsStorageInstance
-      .connect(account1)
-      .carbonRetired(account4.address, ethers.utils.parseUnits("1", "ether"))
-      .should.be.rejectedWith(
-        CarbonRetirementsStorageErrorMsg.CRS_CALLER_NOT_HELPER
-      );
-
-    //-------work successfully
-    await carbonRetirementsStorageInstance
-      .connect(account2)
-      .carbonRetired(account4.address, ethers.utils.parseUnits("1", "ether"));
-
-    assert.equal(
-      Number(
-        await carbonRetirementsStorageInstance.retirements(account4.address)
-      ),
-      Number(ethers.utils.parseUnits("1", "ether")),
-      "carbonRetired func is not correct"
-    );
-
-    await carbonRetirementsStorageInstance
-      .connect(account2)
-      .carbonRetired(account4.address, ethers.utils.parseUnits(".5", "ether"));
-
-    assert.equal(
-      Number(
-        await carbonRetirementsStorageInstance.retirements(account4.address)
-      ),
-      Number(ethers.utils.parseUnits("1.5", "ether")),
-      "carbonRetired func is not correct"
-    );
-  });
-
-  it("test _authorizeUpgrade", async () => {
-    let { account1, account2, carbonRetirementsStorageInstance } =
+  it.only("test setGovernanceToken", async () => {
+    let { account1, account2, account3, account4, account5, courtInstance } =
       await loadFixture(handleDeploymentsAndSetAddress);
 
-    //------------reject (only owner )
+    //-------------reject(only Owner)
 
-    await carbonRetirementsStorageInstance
+    const tokenAddress = account4.address;
+
+    await courtInstance
       .connect(account2)
-      .upgradeTo(zeroAddress)
-      .should.be.rejectedWith(OwnableErrorMsg.CALLER_NOT_OWNER);
+      .setGovernanceToken(tokenAddress)
+      .should.be.rejectedWith("Ownable: caller is not the owner");
 
-    await carbonRetirementsStorageInstance
-      .connect(account1)
-      .upgradeTo(zeroAddress).should.be.rejected;
+    await courtInstance.connect(account2).setGovernanceToken(tokenAddress);
   });
 });
