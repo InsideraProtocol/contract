@@ -4,7 +4,7 @@ pragma solidity ^0.8.6;
 
 /** @title Court interface */
 interface ICourt {
-    function initialize() external;
+    function initialize(address _accessRestrictionAddress) external;
 
     function setGovernanceToken(address _token) external;
 
