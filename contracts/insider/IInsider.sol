@@ -3,7 +3,7 @@ pragma solidity ^0.8.6;
 
 /** @title Insider interface */
 interface IInsider {
-    event InsiderAdded(address insider, uint256 region, uint256 methods);
+    event InsiderJoined(address insider, uint256 region, uint256 methods);
 
     function joinInsider(
         uint256 _region,

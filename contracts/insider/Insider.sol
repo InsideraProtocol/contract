@@ -14,7 +14,7 @@ import "./IInsider.sol";
 contract Insider is IInsider, Initializable, UUPSUpgradeable {
     struct InsiderData {
         uint256 region;
-        uint256 methods;
+        uint256 method;
     }
 
     mapping(address => InsiderData) public override insiders;
@@ -46,15 +46,17 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
 
     function joinInsider(
         uint256 _region,
-        uint256 _methods,
+        uint256 _method,
         address _insider
     ) external override onlyAdmin {
-        insiders[_insider] = InsiderData(_region, _methods);
+        insiders[_insider] = InsiderData(_region, _method);
+
+        emit InsiderJoined(_insider, _region, _method);
     }
 
     function checkInsiderPermission(
         uint256 _region,
-        uint256 _methods,
+        uint256 _method,
         address _insider
     ) external view override returns (bool) {
         InsiderData storage insider = insiders[_insider];
@@ -62,7 +64,7 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
         if (
             accessRestriction.isInsider(_insider) &&
             _region == insider.region &&
-            _methods == insider.methods
+            _method == insider.method
         ) {
             return true;
         }

@@ -71,6 +71,8 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
 
     function setGovernanceToken(address _token) external override onlyOwner {
         governanceToken = _token;
+
+        emit GovernanceTokenSet(_token);
     }
 
     function setInsiderContract(address _address) external override {
@@ -107,6 +109,17 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
         courtData.ipfsData = _ipfsData;
         courtData.createdAt = block.timestamp;
         courtData.status = 1;
+
+        emit CourtCreated(
+            _address1,
+            _address2,
+            _region,
+            _method,
+            _coinPrice,
+            _duration,
+            _ipfsData,
+            block.timestamp
+        );
     }
 
     function stake(uint256 _courtId, uint256 _stakeAmount)
@@ -139,6 +152,8 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
         require(success, "Unsuccessful transfer.");
 
         stakedAmount[_courtId][msg.sender] = _stakeAmount;
+
+        emit Staked(_courtId, _stakeAmount, msg.sender);
     }
 
     function voteGuardian(uint256 _courtId, uint8 _vote)
@@ -160,6 +175,8 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
         voters[_courtId][msg.sender] = 1;
 
         voterListPerCourt[_courtId].push(msg.sender);
+
+        emit GuardianVoted(_courtId, _vote, msg.sender);
     }
 
     function voteInsider(uint256 _courtId, uint8 _vote)
@@ -189,6 +206,8 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
         voters[_courtId][msg.sender] = 2;
 
         voterListPerCourt[_courtId].push(msg.sender);
+
+        emit InsiderVoted(_courtId, _vote, msg.sender);
     }
 
     function settleCourt(uint256 _courtId)
@@ -207,12 +226,15 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
 
         if (courtData.address1VoteCount == courtData.address2VoteCount) {
             courtData.status = 2;
+            emit CourtUnSettled(_courtId);
         } else {
             AttributeLib.Attribute memory winnerAttribute = AttributeLib
                 .Attribute(_courtId, AttributeLib.TypeEnums.WINNER);
 
             AttributeLib.Attribute memory loserAttribute = AttributeLib
                 .Attribute(_courtId, AttributeLib.TypeEnums.LOSER);
+
+            courtData.status = 3;
 
             if (courtData.address1VoteCount > courtData.address2VoteCount) {
                 soulboundContract.mint(winnerAttribute, courtData.address1);
@@ -229,6 +251,12 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
                         voterScore[voterListPerCourt[_courtId][i]] -= 1;
                     }
                 }
+
+                emit CourtSettled(
+                    _courtId,
+                    courtData.address1,
+                    courtData.address2
+                );
             } else {
                 soulboundContract.mint(winnerAttribute, courtData.address2);
                 soulboundContract.mint(loserAttribute, courtData.address1);
@@ -244,9 +272,13 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
                         voterScore[voterListPerCourt[_courtId][i]] -= 1;
                     }
                 }
-            }
 
-            courtData.status = 3;
+                emit CourtSettled(
+                    _courtId,
+                    courtData.address2,
+                    courtData.address1
+                );
+            }
         }
     }
 

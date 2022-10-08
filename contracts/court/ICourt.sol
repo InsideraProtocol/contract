@@ -4,6 +4,23 @@ pragma solidity ^0.8.6;
 
 /** @title Court interface */
 interface ICourt {
+    event GovernanceTokenSet(address token);
+    event CourtCreated(
+        address _address1,
+        address _address2,
+        uint256 region,
+        uint256 method,
+        uint256 coinPrice,
+        uint256 duration,
+        string ipfsData,
+        uint256 createdAt
+    );
+    event Staked(uint256 courtId, uint256 stakeAmount, address staker);
+    event GuardianVoted(uint256 courtId, uint8 vote, address voter);
+    event InsiderVoted(uint256 courtId, uint8 vote, address voter);
+    event CourtSettled(uint256 courtId, address winner, address loser);
+    event CourtUnSettled(uint256 courtId);
+
     function initialize() external;
 
     function setGovernanceToken(address _token) external;
