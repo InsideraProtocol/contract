@@ -19,6 +19,9 @@ describe("Court", async () => {
 
     const Court = await ethers.getContractFactory("Court", account1);
 
+    const MockDai = await ethers.getContractFactory("MockDai");
+    const mockDaiInstance = await MockDai.deploy("MockDai", "mockDai");
+
     const courtInstance = await upgrades.deployProxy(Court, {
       kind: "uups",
       initializer: "initialize",
@@ -31,14 +34,13 @@ describe("Court", async () => {
       account4,
       account5,
       courtInstance,
+      mockDaiInstance,
     };
   }
 
   it("test createCourt", async () => {
     let { account1, account2, account3, account4, account5, courtInstance } =
       await loadFixture(handleDeploymentsAndSetAddress);
-
-    //-------------reject(only Owner)
 
     const address1 = account4.address;
     const address2 = account5.address;
@@ -71,11 +73,9 @@ describe("Court", async () => {
     assert.equal(court.ipfsData, ipfsData, "");
   });
 
-  it.only("test setGovernanceToken", async () => {
+  it("test setGovernanceToken", async () => {
     let { account1, account2, account3, account4, account5, courtInstance } =
       await loadFixture(handleDeploymentsAndSetAddress);
-
-    //-------------reject(only Owner)
 
     const tokenAddress = account4.address;
 
@@ -90,5 +90,43 @@ describe("Court", async () => {
       tokenAddress,
       "token address is incorrect"
     );
+  });
+
+  it.only("test stake", async () => {
+    let {
+      account1,
+      account2,
+      account3,
+      account4,
+      account5,
+      courtInstance,
+      mockDaiInstance,
+    } = await loadFixture(handleDeploymentsAndSetAddress);
+
+    const address1 = account4.address;
+    const address2 = account5.address;
+    const region = 1;
+    const method = 1;
+    const duration = 12 * 24 * 60 * 60;
+    const coinPrice = ethers.utils.parseUnits("1", "ether");
+    const ipfsData = "ipfs data";
+
+    await courtInstance
+      .connect(account2)
+      .createCourt(
+        address1,
+        address2,
+        region,
+        method,
+        coinPrice,
+        duration,
+        ipfsData
+      );
+
+    await courtInstance
+      .connect(account1)
+      .setGovernanceToken(mockDaiInstance.address);
+
+    await courtInstance.connect(account3).stake(1, coinPrice);
   });
 });

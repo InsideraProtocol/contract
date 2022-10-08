@@ -64,7 +64,7 @@ contract Court is UUPSUpgradeable, OwnableUpgradeable, ICourt {
     }
 
     modifier validCourt(uint256 _courtId) {
-        require(_courtId > 0 && _courtId < courtId.current(), "Invalid court");
+        require(_courtId > 0 && _courtId <= courtId.current(), "Invalid court");
 
         _;
     }

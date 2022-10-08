@@ -5,12 +5,17 @@
       "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
       "txHash": "0x03900b668ad2e15ff999a071a8b157e7717693de71c58f94450ca9b8fe6dc66b",
       "kind": "uups"
+    },
+    {
+      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "txHash": "0xa96d695afd9349ac20a8b97fb353941ad84b16dbc38383bbb97e3560ae78964b",
+      "kind": "uups"
     }
   ],
   "impls": {
-    "962a6a4e1ae5dc37914fefbcbafabbacf3e2b91e11540be1de910e5cda0e4808": {
-      "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      "txHash": "0xfcf2381d7ff8c22cff1ee6282d00191dc5b2ce2666e8b701f0e84d6bc12be3a7",
+    "761a00ddfbbd16a5f242dc12b18127cd5cf5acd79ed3f59f5898d5523ea65e35": {
+      "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      "txHash": "0x4e1bf70f04f9915affee2607cee6d4753bd52fc874df24e4a73ec9f460d6f74b",
       "layout": {
         "solcVersion": "0.8.6",
         "storage": [
@@ -75,7 +80,7 @@
             "label": "courts",
             "offset": 0,
             "slot": "201",
-            "type": "t_mapping(t_uint256,t_struct(Court)2188_storage)",
+            "type": "t_mapping(t_uint256,t_struct(Court)1477_storage)",
             "contract": "Court",
             "src": "contracts/court/Court.sol:34"
           },
@@ -131,7 +136,7 @@
             "label": "insiderContract",
             "offset": 0,
             "slot": "207",
-            "type": "t_contract(IInsider)3296",
+            "type": "t_contract(IInsider)2481",
             "contract": "Court",
             "src": "contracts/court/Court.sol:49"
           },
@@ -139,7 +144,7 @@
             "label": "soulboundContract",
             "offset": 0,
             "slot": "208",
-            "type": "t_contract(ISoulbound)3367",
+            "type": "t_contract(ISoulbound)2552",
             "contract": "Court",
             "src": "contracts/court/Court.sol:50"
           },
@@ -173,11 +178,11 @@
             "label": "bool",
             "numberOfBytes": "1"
           },
-          "t_contract(IInsider)3296": {
+          "t_contract(IInsider)2481": {
             "label": "contract IInsider",
             "numberOfBytes": "20"
           },
-          "t_contract(ISoulbound)3367": {
+          "t_contract(ISoulbound)2552": {
             "label": "contract ISoulbound",
             "numberOfBytes": "20"
           },
@@ -209,7 +214,7 @@
             "label": "mapping(uint256 => mapping(address => uint8))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(Court)2188_storage)": {
+          "t_mapping(t_uint256,t_struct(Court)1477_storage)": {
             "label": "mapping(uint256 => struct Court.Court)",
             "numberOfBytes": "32"
           },
@@ -229,7 +234,7 @@
             ],
             "numberOfBytes": "32"
           },
-          "t_struct(Court)2188_storage": {
+          "t_struct(Court)1477_storage": {
             "label": "struct Court.Court",
             "members": [
               {
