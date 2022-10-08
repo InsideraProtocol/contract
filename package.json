@@ -17,7 +17,13 @@
   },
   "homepage": "https://github.com/InsiderProtocol/contract#readme",
   "devDependencies": {
+    "@openzeppelin/contracts": "4.7.3",
+    "@openzeppelin/contracts-upgradeable": "4.7.3",
+    "@openzeppelin/hardhat-upgrades": "^1.20.0",
     "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "big.js": "6.2.1",
+    "dotenv": "^16.0.2",
+    "ethers": "^5.7.0",
     "hardhat": "^2.11.2"
   }
 }
