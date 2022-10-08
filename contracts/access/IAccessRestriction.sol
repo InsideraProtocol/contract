@@ -22,6 +22,8 @@ interface IAccessRestriction is IAccessControlUpgradeable {
 
     function ifInsiderProtocolContract(address _address) external view;
 
+    function grantInsiderRole(address _account) external;
+
     function isInsiderProtocolContract(address _address)
         external
         view

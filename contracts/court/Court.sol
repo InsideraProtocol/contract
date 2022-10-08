@@ -18,7 +18,7 @@ import "../access/IAccessRestriction.sol";
 contract Court is UUPSUpgradeable, ICourt {
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
-    struct Court {
+    struct CourtData {
         address address1; //===> onchain payment
         address address2; //===> offchain payment
         uint256 region;
@@ -32,7 +32,7 @@ contract Court is UUPSUpgradeable, ICourt {
         string ipfsData; // encrypt data;
     }
 
-    mapping(uint256 => Court) public override courts;
+    mapping(uint256 => CourtData) public override courts;
 
     mapping(uint256 => mapping(address => uint256))
         public
@@ -115,7 +115,7 @@ contract Court is UUPSUpgradeable, ICourt {
     ) external override {
         courtId.increment();
 
-        Court storage courtData = courts[courtId.current()];
+        CourtData storage courtData = courts[courtId.current()];
 
         courtData.address1 = _address1;
         courtData.address2 = _address2;
@@ -144,7 +144,7 @@ contract Court is UUPSUpgradeable, ICourt {
         override
         validCourt(_courtId)
     {
-        Court storage courtData = courts[_courtId];
+        CourtData storage courtData = courts[_courtId];
 
         require(
             block.timestamp < courtData.createdAt + courtData.duration,
@@ -180,7 +180,7 @@ contract Court is UUPSUpgradeable, ICourt {
     {
         require(_vote < 2, "invalid vote value");
 
-        Court storage courtData = courts[_courtId];
+        CourtData storage courtData = courts[_courtId];
 
         require(voters[_courtId][msg.sender] == 0, "already voted.");
         require(stakedAmount[_courtId][msg.sender] > 0, "not staked");
@@ -205,7 +205,7 @@ contract Court is UUPSUpgradeable, ICourt {
 
         require(_vote < 2, "invalid vote value");
 
-        Court storage courtData = courts[_courtId];
+        CourtData storage courtData = courts[_courtId];
 
         require(
             insiderContract.checkInsiderPermission(
@@ -232,7 +232,7 @@ contract Court is UUPSUpgradeable, ICourt {
         override
         validCourt(_courtId)
     {
-        Court storage courtData = courts[_courtId];
+        CourtData storage courtData = courts[_courtId];
 
         require(
             block.timestamp > courtData.createdAt + courtData.duration,

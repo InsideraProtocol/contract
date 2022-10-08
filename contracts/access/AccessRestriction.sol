@@ -67,6 +67,14 @@ contract AccessRestriction is
         );
     }
 
+    function grantInsiderRole(address _account) external override {
+        require(
+            isInsiderProtocolContract(_account),
+            "Caller not insider contract"
+        );
+        _grantRole(INSIDER_ROLE, _account);
+    }
+
     /// @inheritdoc IAccessRestriction
     function isInsider(address _address) public view override returns (bool) {
         return hasRole(INSIDER_ROLE, _address);
