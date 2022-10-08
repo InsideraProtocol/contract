@@ -114,4 +114,117 @@ contract OpenFact is Initializable, UUPSUpgradeable {
             room.status = 1;
         }
     }
+
+    function receiverUploadHash(uint256 _roomId, string memory _ipfsHash)
+        external
+    {
+        RoomData storage room = rooms[_roomId];
+
+        require(room.status == 1, "room is full.");
+
+        TransferData storage transferData;
+        for (uint256 i = 0; i < 2; i++) {
+            transferData = room.transfer[i];
+
+            if (transferData.receiver == msg.sender) {
+                require(transferData.status == 0, "hash already exist");
+
+                transferData.receiverAccountHash = _ipfsHash;
+                transferData.status = 1;
+
+                break;
+            }
+        }
+    }
+
+    function senderUploadHash(uint256 _roomId, string memory _ipfsHash)
+        external
+    {
+        RoomData storage room = rooms[_roomId];
+
+        require(room.status == 1, "room is full.");
+
+        TransferData storage transferData;
+        for (uint256 i = 0; i < 2; i++) {
+            transferData = room.transfer[i];
+
+            if (transferData.sender == msg.sender) {
+                require(transferData.status == 1, "pending to receiver");
+
+                transferData.senderTxHash = _ipfsHash;
+                transferData.status = 2;
+
+                break;
+            }
+        }
+    }
+
+    function receiverVerifyTx(uint256 _roomId, string memory _ipfsHash)
+        external
+    {
+        RoomData storage room = rooms[_roomId];
+
+        require(room.status == 1, "room is full.");
+
+        TransferData storage transferData;
+
+        for (uint256 i = 0; i < 2; i++) {
+            transferData = room.transfer[i];
+
+            if (transferData.receiver == msg.sender) {
+                require(transferData.status == 2, "pending to sender");
+
+                transferData.recieverAccountHashForInsider = _ipfsHash;
+                transferData.status = 3;
+
+                break;
+            }
+        }
+    }
+
+    function checkTxByInsider(
+        uint256 _roomId,
+        uint256 _transferId,
+        bool _checked
+    ) external {
+        RoomData storage room = rooms[_roomId];
+
+        require(room.status == 1, "room is full.");
+
+        TransferData storage transferData = room.transfer[_transferId];
+
+        require(transferData.status == 3, "not verified by receiver");
+
+        transferData.insiderAnswer = _checked;
+        transferData.status = 4;
+    }
+
+    function verifyInsiderByReceiver(uint256 _roomId, bool _isVerified)
+        external
+    {
+        RoomData storage room = rooms[_roomId];
+
+        require(room.status == 1, "room is full.");
+
+        TransferData storage transferData;
+
+        for (uint256 i = 0; i < 2; i++) {
+            transferData = room.transfer[i];
+
+            if (transferData.receiver == msg.sender) {
+                require(transferData.status == 4, "pending to insider");
+                if (_isVerified) {
+                    room.insiderScore += 1;
+                } else {
+                    room.status = 2;
+                }
+                break;
+            }
+        }
+
+        if (room.insiderScore == 2) {
+            accessRestriction.grantInsiderRole(room.creator);
+            room.status = 3;
+        }
+    }
 }
