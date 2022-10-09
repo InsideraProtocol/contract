@@ -12,6 +12,8 @@ import "../access/IAccessRestriction.sol";
 
 import "./IInsider.sol";
 
+import "../chainLink/IChainLink.sol";
+
 contract Insider is IInsider, Initializable, UUPSUpgradeable {
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
@@ -42,12 +44,20 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
 
     mapping(uint256 => RoomData) public rooms;
 
+    mapping(uint256 => uint256) public requestIdToRoomId;
+
     bool public override isInsider;
     IAccessRestriction public accessRestriction;
+    IChainLink public chainLinkContract;
     CountersUpgradeable.Counter public roomId;
 
     modifier onlyAdmin() {
         accessRestriction.ifAdmin(msg.sender);
+        _;
+    }
+
+    modifier onlyInsiderProtocolContract() {
+        accessRestriction.ifInsiderProtocolContract(msg.sender);
         _;
     }
 
@@ -91,6 +101,14 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
         return false;
     }
 
+    function setChainLinkContract(address _address)
+        external
+        override
+        onlyAdmin
+    {
+        chainLinkContract = IChainLink(_address);
+    }
+
     function createRoom(uint256 _method) external override {
         roomId.increment();
 
@@ -112,42 +130,50 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
         emit VolunteersJoined(_roomId, msg.sender, room.volunteers.length);
 
         if (room.volunteers.length == 4) {
-            uint256 firstSender = uint256(
-                keccak256(
-                    abi.encode(
-                        room.insider,
-                        room.volunteers[0],
-                        room.volunteers[1],
-                        room.volunteers[2],
-                        room.volunteers[3]
-                    )
-                )
-            ) % 4;
-
-            TransferData storage transferData;
-
-            transferData = room.transfer[0];
-
-            transferData.sender = room.volunteers[firstSender];
-
-            transferData.receiver = room.volunteers[(firstSender + 1) % 4];
-
-            transferData = room.transfer[1];
-
-            transferData.sender = room.volunteers[(firstSender + 2) % 4];
-
-            transferData.receiver = room.volunteers[(firstSender + 3) % 4];
-
             room.status = 1;
 
-            emit RoomStarted(
-                _roomId,
-                room.transfer[0].sender,
-                room.transfer[0].receiver,
-                transferData.sender,
-                transferData.receiver
-            );
+            uint256 requerstId = chainLinkContract.requestRandomWords();
+
+            requestIdToRoomId[requerstId] = _roomId;
         }
+    }
+
+    function callFromRandom(uint256 _requestId, uint256[] memory _randomWords)
+        external
+        override
+        onlyInsiderProtocolContract
+    {
+        uint256 roomIdLocal = requestIdToRoomId[_requestId];
+
+        RoomData storage room = rooms[roomIdLocal];
+
+        require(room.status == 1, "room is full.");
+
+        uint256 number = _randomWords[0] % 4;
+
+        TransferData storage transferData;
+
+        transferData = room.transfer[0];
+
+        transferData.sender = room.volunteers[number];
+
+        transferData.receiver = room.volunteers[(number + 1) % 4];
+
+        transferData = room.transfer[1];
+
+        transferData.sender = room.volunteers[(number + 2) % 4];
+
+        transferData.receiver = room.volunteers[(number + 3) % 4];
+
+        room.status = 2;
+
+        emit RoomStarted(
+            roomIdLocal,
+            room.transfer[0].sender,
+            room.transfer[0].receiver,
+            transferData.sender,
+            transferData.receiver
+        );
     }
 
     function receiverUploadHash(uint256 _roomId, string memory _ipfsHash)
@@ -156,7 +182,7 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
     {
         RoomData storage room = rooms[_roomId];
 
-        require(room.status == 1, "room is full.");
+        require(room.status == 2, "room is full.");
 
         TransferData storage transferData;
         for (uint256 i = 0; i < 2; i++) {
@@ -181,7 +207,7 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
     {
         RoomData storage room = rooms[_roomId];
 
-        require(room.status == 1, "room is full.");
+        require(room.status == 2, "room is full.");
 
         TransferData storage transferData;
         for (uint256 i = 0; i < 2; i++) {
@@ -204,7 +230,7 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
     {
         RoomData storage room = rooms[_roomId];
 
-        require(room.status == 1, "room is full.");
+        require(room.status == 2, "room is full.");
 
         TransferData storage transferData;
 
@@ -230,7 +256,7 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
     ) external override {
         RoomData storage room = rooms[_roomId];
 
-        require(room.status == 1, "room is full.");
+        require(room.status == 2, "room is full.");
         require(room.insider == msg.sender, "sender is not room insider");
 
         TransferData storage transferData = room.transfer[_transferIndex];
@@ -248,7 +274,7 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
     {
         RoomData storage room = rooms[_roomId];
 
-        require(room.status == 1, "room is full.");
+        require(room.status == 2, "room is full.");
 
         TransferData storage transferData;
 
@@ -266,7 +292,7 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
                         room.insiderScore
                     );
                 } else {
-                    room.status = 2;
+                    room.status = 3;
 
                     emit InsiderRejected(_roomId);
                 }
@@ -277,7 +303,7 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
 
         if (room.insiderScore == 2) {
             accessRestriction.grantInsiderRole(room.insider);
-            room.status = 3;
+            room.status = 4;
         }
     }
 }

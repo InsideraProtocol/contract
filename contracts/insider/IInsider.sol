@@ -67,4 +67,9 @@ interface IInsider {
 
     function verifyInsiderByReceiver(uint256 _roomId, bool _isVerified)
         external;
+
+    function setChainLinkContract(address _address) external;
+
+    function callFromRandom(uint256 _requestId, uint256[] memory _randomWords)
+        external;
 }
