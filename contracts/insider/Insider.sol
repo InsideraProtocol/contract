@@ -280,4 +280,20 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
             room.status = 3;
         }
     }
+
+    function getRoomVolunteers(uint256 _roomId, uint256 _index)
+        external
+        view
+        returns (address)
+    {
+        return rooms[_roomId].volunteers[_index];
+    }
+
+    function getRoomTransferData(uint256 _roomId, uint256 _transferId)
+        external
+        view
+        returns (TransferData memory transferData)
+    {
+        return rooms[_roomId].transfer[_transferId];
+    }
 }
