@@ -13,6 +13,40 @@ import "../access/IAccessRestriction.sol";
 import "./IInsider.sol";
 
 contract OpenFact is Initializable, UUPSUpgradeable {
+    event RoomCreated(uint256 roomId, uint256 method, address insider);
+    event VolunteersJoined(
+        uint256 roomId,
+        address volunteer,
+        uint256 volunteersLength
+    );
+    event RoomStarted(
+        uint256 roomId,
+        address firstSender,
+        address firstReciever,
+        address secondSender,
+        address secondReciever
+    );
+    event ReceiverHashUploaded(
+        uint256 roomId,
+        string ipfsHash,
+        address receiver
+    );
+    event SenderHashUploaded(uint256 roomId, string ipfsHash, address sender);
+    event ReceiverTxVerified(uint256 roomId, string ipfsHash, address receiver);
+
+    event TxCheckedByInsider(
+        uint256 roomId,
+        uint256 transferIndex,
+        bool checked,
+        address insider
+    );
+    event InsiderVerified(
+        uint256 roomId,
+        address receiver,
+        uint256 insiderScore
+    );
+    event InsiderRejected(uint256 roomId);
+
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
     struct TransferData {
@@ -28,7 +62,7 @@ contract OpenFact is Initializable, UUPSUpgradeable {
     struct RoomData {
         uint8 status; // 0 => pending for volunteers join // 1 => volunteers must transfer to each other
         uint256 method;
-        address creator;
+        address insider;
         address[] volunteers;
         mapping(uint256 => TransferData) transfer;
         uint8 insiderScore;
@@ -74,7 +108,11 @@ contract OpenFact is Initializable, UUPSUpgradeable {
         RoomData storage room = rooms[roomId.current()];
 
         room.method = _method;
-        room.creator = msg.sender;
+        room.insider = msg.sender;
+
+        emit RoomCreated(roomId.current(), _method, msg.sender);
+
+        roomId.increment();
     }
 
     function joinVolunteers(uint256 _roomId) external {
@@ -84,11 +122,13 @@ contract OpenFact is Initializable, UUPSUpgradeable {
 
         room.volunteers.push(msg.sender);
 
+        emit VolunteersJoined(_roomId, msg.sender, room.volunteers.length);
+
         if (room.volunteers.length == 4) {
             uint256 firstSender = uint256(
                 keccak256(
                     abi.encode(
-                        room.creator,
+                        room.insider,
                         room.volunteers[0],
                         room.volunteers[1],
                         room.volunteers[2],
@@ -112,6 +152,14 @@ contract OpenFact is Initializable, UUPSUpgradeable {
             transferData.receiver = room.volunteers[(firstSender + 3) % 4];
 
             room.status = 1;
+
+            emit RoomStarted(
+                _roomId,
+                room.transfer[0].sender,
+                room.transfer[0].receiver,
+                transferData.sender,
+                transferData.receiver
+            );
         }
     }
 
@@ -131,6 +179,8 @@ contract OpenFact is Initializable, UUPSUpgradeable {
 
                 transferData.receiverAccountHash = _ipfsHash;
                 transferData.status = 1;
+
+                emit ReceiverHashUploaded(_roomId, _ipfsHash, msg.sender);
 
                 break;
             }
@@ -153,7 +203,7 @@ contract OpenFact is Initializable, UUPSUpgradeable {
 
                 transferData.senderTxHash = _ipfsHash;
                 transferData.status = 2;
-
+                emit SenderHashUploaded(_roomId, _ipfsHash, msg.sender);
                 break;
             }
         }
@@ -177,6 +227,7 @@ contract OpenFact is Initializable, UUPSUpgradeable {
                 transferData.recieverAccountHashForInsider = _ipfsHash;
                 transferData.status = 3;
 
+                emit ReceiverTxVerified(_roomId, _ipfsHash, msg.sender);
                 break;
             }
         }
@@ -184,19 +235,21 @@ contract OpenFact is Initializable, UUPSUpgradeable {
 
     function checkTxByInsider(
         uint256 _roomId,
-        uint256 _transferId,
+        uint256 _transferIndex,
         bool _checked
     ) external {
         RoomData storage room = rooms[_roomId];
 
         require(room.status == 1, "room is full.");
+        require(room.insider == msg.sender, "sender is not room insider");
 
-        TransferData storage transferData = room.transfer[_transferId];
+        TransferData storage transferData = room.transfer[_transferIndex];
 
         require(transferData.status == 3, "not verified by receiver");
 
         transferData.insiderAnswer = _checked;
         transferData.status = 4;
+        emit TxCheckedByInsider(_roomId, _transferIndex, _checked, msg.sender);
     }
 
     function verifyInsiderByReceiver(uint256 _roomId, bool _isVerified)
@@ -215,15 +268,24 @@ contract OpenFact is Initializable, UUPSUpgradeable {
                 require(transferData.status == 4, "pending to insider");
                 if (_isVerified) {
                     room.insiderScore += 1;
+
+                    emit InsiderVerified(
+                        _roomId,
+                        msg.sender,
+                        room.insiderScore
+                    );
                 } else {
                     room.status = 2;
+
+                    emit InsiderRejected(_roomId);
                 }
+                transferData.status = 5;
                 break;
             }
         }
 
         if (room.insiderScore == 2) {
-            accessRestriction.grantInsiderRole(room.creator);
+            accessRestriction.grantInsiderRole(room.insider);
             room.status = 3;
         }
     }
