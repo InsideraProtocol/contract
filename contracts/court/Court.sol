@@ -128,6 +128,7 @@ contract Court is UUPSUpgradeable, ICourt {
         courtData.status = 1;
 
         emit CourtCreated(
+            courtId.current(),
             _address1,
             _address2,
             _region,

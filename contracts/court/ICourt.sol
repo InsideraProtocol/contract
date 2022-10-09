@@ -6,8 +6,9 @@ pragma solidity ^0.8.6;
 interface ICourt {
     event GovernanceTokenSet(address token);
     event CourtCreated(
-        address _address1,
-        address _address2,
+        uint256 courtId,
+        address address1,
+        address address2,
         uint256 region,
         uint256 method,
         uint256 coinPrice,
