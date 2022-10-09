@@ -1,5 +1,7 @@
 const hre = require("hardhat");
 async function main() {
+  console.log("Deploying chainlink...");
+
   const VRFv2Consumer = await hre.ethers.getContractFactory("VRFv2Consumer");
   const vRFv2Consumer = await VRFv2Consumer.deploy(
     process.env.SUBSCRIPTION_ID,

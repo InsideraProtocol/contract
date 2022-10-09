@@ -1,5 +1,7 @@
 const hre = require("hardhat");
 async function main() {
+  console.log("Deploying mockDai...");
+
   const MockDai = await hre.ethers.getContractFactory("MockDai");
   const mockDai = await MockDai.deploy("MockDai", "mockDai");
 

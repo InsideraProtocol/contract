@@ -15,7 +15,7 @@ async function main() {
     process.env.ACCESS_RESTRICTION_CONTRACT
   );
 
-  //-----------> grant Role
+  // //-----------> grant Role
   await accessRestriction.grantRole(
     INSIDER_PROTOCOL_CONTRACT_ROLE,
     process.env.COURT_CONTRACT
@@ -24,6 +24,11 @@ async function main() {
   await accessRestriction.grantRole(
     INSIDER_PROTOCOL_CONTRACT_ROLE,
     process.env.INSIDER_CONTRACT
+  );
+
+  await accessRestriction.grantRole(
+    INSIDER_PROTOCOL_CONTRACT_ROLE,
+    process.env.CHAIN_LINK_CONTRACT
   );
 }
 

@@ -4,7 +4,7 @@ const { ethers, upgrades } = require("hardhat");
 
 async function main() {
   const AccessRestriction = await hre.ethers.getContractFactory(
-    "AccessRestriction",
+    "AccessRestriction"
   );
 
   console.log("Deploying accessRestriction...");
@@ -15,7 +15,7 @@ async function main() {
     {
       kind: "uups",
       initializer: "initialize",
-    },
+    }
   );
 
   await accessRestriction.deployed();

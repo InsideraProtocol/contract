@@ -7,7 +7,7 @@ async function main() {
 
   console.log("Deploying soulbound...");
 
-  const baseURI = "example";
+  const baseURI = "baseURI";
 
   const soulbound = await upgrades.deployProxy(
     Soulbound,
