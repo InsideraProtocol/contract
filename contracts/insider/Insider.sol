@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.6;
 
-pragma solidity ^0.8.6;
-
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -32,10 +30,10 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
     }
 
     struct RoomData {
-        uint8 status; // 0 => pending for volunteers join // 1 => volunteers must transfer to each other
+        uint8 status; // 0 => pending for witness join // 1 => witness must transfer to each other
         uint256 method;
         address insider;
-        address[] volunteers;
+        address[] witnesses;
         mapping(uint256 => TransferData) transfer;
         uint8 insiderScore;
     }
@@ -120,16 +118,16 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
         emit RoomCreated(roomId.current(), _method, msg.sender);
     }
 
-    function joinVolunteers(uint256 _roomId) external override {
+    function joinWitness(uint256 _roomId) external override {
         RoomData storage room = rooms[_roomId];
 
         require(room.status == 0, "room is full.");
 
-        room.volunteers.push(msg.sender);
+        room.witnesses.push(msg.sender);
 
-        emit VolunteersJoined(_roomId, msg.sender, room.volunteers.length);
+        emit WitnessJoined(_roomId, msg.sender, room.witnesses.length);
 
-        if (room.volunteers.length == 4) {
+        if (room.witnesses.length == 4) {
             room.status = 1;
 
             uint256 requerstId = chainLinkContract.requestRandomWords();
@@ -155,15 +153,15 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
 
         transferData = room.transfer[0];
 
-        transferData.sender = room.volunteers[number];
+        transferData.sender = room.witnesses[number];
 
-        transferData.receiver = room.volunteers[(number + 1) % 4];
+        transferData.receiver = room.witnesses[(number + 1) % 4];
 
         transferData = room.transfer[1];
 
-        transferData.sender = room.volunteers[(number + 2) % 4];
+        transferData.sender = room.witnesses[(number + 2) % 4];
 
-        transferData.receiver = room.volunteers[(number + 3) % 4];
+        transferData.receiver = room.witnesses[(number + 3) % 4];
 
         room.status = 2;
 
@@ -303,7 +301,27 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
 
         if (room.insiderScore == 2) {
             accessRestriction.grantInsiderRole(room.insider);
+
+            InsiderData storage insiderData = insiders[room.insider];
+            insiderData.method = room.method;
+
             room.status = 4;
         }
+    }
+
+    function getRoomWitnesses(uint256 _roomId, uint256 _index)
+        external
+        view
+        returns (address)
+    {
+        return rooms[_roomId].witnesses[_index];
+    }
+
+    function getRoomTransferData(uint256 _roomId, uint256 _transferId)
+        external
+        view
+        returns (TransferData memory transferData)
+    {
+        return rooms[_roomId].transfer[_transferId];
     }
 }

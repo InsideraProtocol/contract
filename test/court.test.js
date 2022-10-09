@@ -11,15 +11,11 @@ const assert = require("chai").assert;
 require("chai").use(require("chai-as-promised")).should();
 
 describe("Court", async () => {
-  const zeroAddress = "0x0000000000000000000000000000000000000000";
-
   async function handleDeploymentsAndSetAddress() {
     const [account1, account2, account3, account4, account5, account6] =
       await ethers.getSigners();
 
     const Court = await ethers.getContractFactory("Court", account1);
-
-    const Insider = await ethers.getContractFactory("Insider", account1);
 
     const AccessRestriction = await ethers.getContractFactory(
       "AccessRestriction",
@@ -34,15 +30,6 @@ describe("Court", async () => {
     const accessRestrictionInstance = await upgrades.deployProxy(
       AccessRestriction,
       [account1.address],
-      {
-        kind: "uups",
-        initializer: "initialize",
-      }
-    );
-
-    const insiderInstance = await upgrades.deployProxy(
-      Insider,
-      [accessRestrictionInstance.address],
       {
         kind: "uups",
         initializer: "initialize",
@@ -76,7 +63,6 @@ describe("Court", async () => {
       account6,
       courtInstance,
       mockDaiInstance,
-      insiderInstance,
       accessRestrictionInstance,
       soulboundInstance,
     };
@@ -295,9 +281,23 @@ describe("Court", async () => {
       account5,
       courtInstance,
       mockDaiInstance,
-      insiderInstance,
       accessRestrictionInstance,
     } = await loadFixture(handleDeploymentsAndSetAddress);
+
+    const MockInsider = await ethers.getContractFactory(
+      "MockInsider",
+      account1
+    );
+
+    const mockInsiderInstance = await upgrades.deployProxy(
+      MockInsider,
+      [accessRestrictionInstance.address],
+      {
+        kind: "uups",
+        initializer: "initialize",
+      }
+    );
+
     const address1 = account4.address;
     const address2 = account5.address;
     const region = 1;
@@ -323,15 +323,15 @@ describe("Court", async () => {
       .connect(account1)
       .setGovernanceToken(mockDaiInstance.address);
 
-    await courtInstance.setInsiderContract(insiderInstance.address);
+    await courtInstance.setInsiderContract(mockInsiderInstance.address);
+
+    await mockInsiderInstance.setMethod(account3.address, method);
 
     const INSIDER_ROLE = ethers.utils.keccak256(
       ethers.utils.toUtf8Bytes("INSIDER_ROLE")
     );
 
     await accessRestrictionInstance.grantRole(INSIDER_ROLE, account3.address);
-
-    await insiderInstance.joinInsider(region, method, account3.address);
 
     await courtInstance.connect(account3).voteInsider(1, 1);
 
@@ -368,9 +368,24 @@ describe("Court", async () => {
       account6,
       courtInstance,
       mockDaiInstance,
-      insiderInstance,
+
       accessRestrictionInstance,
     } = await loadFixture(handleDeploymentsAndSetAddress);
+
+    const MockInsider = await ethers.getContractFactory(
+      "MockInsider",
+      account1
+    );
+
+    const mockInsiderInstance = await upgrades.deployProxy(
+      MockInsider,
+      [accessRestrictionInstance.address],
+      {
+        kind: "uups",
+        initializer: "initialize",
+      }
+    );
+
     const address1 = account5.address;
     const address2 = account6.address;
     const region = 1;
@@ -409,7 +424,7 @@ describe("Court", async () => {
 
     await courtInstance.connect(account3).voteGuardian(1, 0);
 
-    await courtInstance.setInsiderContract(insiderInstance.address);
+    await courtInstance.setInsiderContract(mockInsiderInstance.address);
 
     const INSIDER_ROLE = ethers.utils.keccak256(
       ethers.utils.toUtf8Bytes("INSIDER_ROLE")
@@ -417,8 +432,7 @@ describe("Court", async () => {
 
     await accessRestrictionInstance.grantRole(INSIDER_ROLE, account4.address);
 
-    await insiderInstance.joinInsider(region, method, account4.address);
-
+    await mockInsiderInstance.setMethod(account4.address, method);
     await courtInstance.connect(account4).voteInsider(1, 1);
 
     const court = await courtInstance.courts(1);
@@ -463,7 +477,7 @@ describe("Court", async () => {
       account6,
       courtInstance,
       mockDaiInstance,
-      insiderInstance,
+
       accessRestrictionInstance,
       soulboundInstance,
     } = await loadFixture(handleDeploymentsAndSetAddress);

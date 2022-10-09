@@ -4,11 +4,7 @@ pragma solidity ^0.8.6;
 /** @title Insider interface */
 interface IInsider {
     event RoomCreated(uint256 roomId, uint256 method, address insider);
-    event VolunteersJoined(
-        uint256 roomId,
-        address volunteer,
-        uint256 volunteersLength
-    );
+    event WitnessJoined(uint256 roomId, address witness, uint256 witnessLength);
     event RoomStarted(
         uint256 roomId,
         address firstSender,
@@ -48,7 +44,7 @@ interface IInsider {
 
     function createRoom(uint256 _method) external;
 
-    function joinVolunteers(uint256 _roomId) external;
+    function joinWitness(uint256 _roomId) external;
 
     function receiverUploadHash(uint256 _roomId, string memory _ipfsHash)
         external;

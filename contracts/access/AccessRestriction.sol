@@ -69,7 +69,7 @@ contract AccessRestriction is
 
     function grantInsiderRole(address _account) external override {
         require(
-            isInsiderProtocolContract(_account),
+            isInsiderProtocolContract(msg.sender),
             "Caller not insider contract"
         );
         _grantRole(INSIDER_ROLE, _account);
