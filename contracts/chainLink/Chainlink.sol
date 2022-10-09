@@ -32,7 +32,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
     bytes32 keyHash =
         0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f;
 
-    uint32 callbackGasLimit = 50000;
+    uint32 callbackGasLimit = 300000;
 
     uint16 requestConfirmations = 3;
 

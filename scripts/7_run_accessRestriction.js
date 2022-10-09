@@ -15,7 +15,9 @@ async function main() {
     process.env.ACCESS_RESTRICTION_CONTRACT
   );
 
-  // //-----------> grant Role
+  const [account1, account2, account3] = await ethers.getSigners();
+
+  //-----------> grant Role
   await accessRestriction.grantRole(
     INSIDER_PROTOCOL_CONTRACT_ROLE,
     process.env.COURT_CONTRACT
