@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.6;
 
-pragma solidity ^0.8.6;
-
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -277,6 +275,9 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
 
         if (room.insiderScore == 2) {
             accessRestriction.grantInsiderRole(room.insider);
+            InsiderData storage insiderData = insiders[room.insider];
+            insiderData.method = room.method;
+
             room.status = 3;
         }
     }
