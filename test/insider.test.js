@@ -192,6 +192,8 @@ describe("Insider", async () => {
     const receiverVerifyIpfsHash = "receiverVerifyIpfsHash";
     await insiderInstance.connect(account2).createRoom(method);
 
+    const roomData = await insiderInstance.rooms(roomId);
+
     //1st volunteers join
     await insiderInstance.connect(account3).joinVolunteers(roomId);
 
@@ -377,6 +379,12 @@ describe("Insider", async () => {
       INSIDER_PROTOCOL_CONTRACT_ROLE,
       insiderInstance.address
     );
+    assert.equal(Number(await insiderInstance.insiders(roomData.insider)), 0);
+
+    assert.equal(
+      await accessRestrictionInstance.isInsider(roomData.insider),
+      false
+    );
 
     await insiderInstance
       .connect(receiver2)
@@ -385,5 +393,15 @@ describe("Insider", async () => {
     const roomAfterVerify2 = await insiderInstance.rooms(roomId);
     assert.equal(Number(roomAfterVerify2.insiderScore), 2);
     assert.equal(Number(roomAfterVerify2.status), 3);
+
+    assert.equal(
+      await accessRestrictionInstance.isInsider(roomData.insider),
+      true
+    );
+
+    assert.equal(
+      Number(await insiderInstance.insiders(roomData.insider)),
+      method
+    );
   });
 });
