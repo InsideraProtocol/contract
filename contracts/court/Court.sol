@@ -209,7 +209,6 @@ contract Court is UUPSUpgradeable, ICourt {
 
         require(
             insiderContract.checkInsiderPermission(
-                courtData.region,
                 courtData.method,
                 msg.sender
             ),
