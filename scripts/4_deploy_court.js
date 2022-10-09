@@ -7,12 +7,14 @@ async function main() {
 
   console.log("Deploying court...");
 
-  const accessRestrictionAddress = "0xe0043e8185edb790BF2936e24C2067766F903678";
-
-  const court = await upgrades.deployProxy(Court, [accessRestrictionAddress], {
-    kind: "uups",
-    initializer: "initialize",
-  });
+  const court = await upgrades.deployProxy(
+    Court,
+    [process.env.ACCESS_RESTRICTION_CONTRACT],
+    {
+      kind: "uups",
+      initializer: "initialize",
+    }
+  );
 
   await court.deployed();
 

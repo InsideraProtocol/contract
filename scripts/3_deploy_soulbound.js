@@ -7,12 +7,11 @@ async function main() {
 
   console.log("Deploying soulbound...");
 
-  const accessRestrictionAddress = "0xe0043e8185edb790BF2936e24C2067766F903678";
   const baseURI = "example";
 
   const soulbound = await upgrades.deployProxy(
     Soulbound,
-    [accessRestrictionAddress, baseURI],
+    [process.env.ACCESS_RESTRICTION_CONTRACT, baseURI],
     {
       kind: "uups",
       initializer: "initialize",
