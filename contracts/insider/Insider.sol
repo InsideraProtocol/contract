@@ -12,6 +12,8 @@ import "./IInsider.sol";
 
 import "../chainLink/IChainLink.sol";
 
+import "./../push/IPush.sol";
+
 contract Insider is IInsider, Initializable, UUPSUpgradeable {
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
@@ -157,11 +159,49 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
 
         transferData.receiver = room.witnesses[(number + 1) % 4];
 
+        IPUSHCommInterface(0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa)
+            .sendNotification(
+                0x2A346532cA75Be7e7227d258C477Da275dca7d67,
+                transferData.receiver, //==> recipient
+                bytes(
+                    string(
+                        abi.encodePacked(
+                            "0", // this is notification identity: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                            "+", // segregator
+                            "3", // this is payload type: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/payload (1, 3 or 4) = (Broadcast, targetted or subset)
+                            "+", // segregator
+                            "Upload your hash", // this is notificaiton title
+                            "+", // segregator
+                            "Please upload your account information hash." // notification body
+                        )
+                    )
+                )
+            );
+
         transferData = room.transfer[1];
 
         transferData.sender = room.witnesses[(number + 2) % 4];
 
         transferData.receiver = room.witnesses[(number + 3) % 4];
+
+        IPUSHCommInterface(0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa)
+            .sendNotification(
+                0x2A346532cA75Be7e7227d258C477Da275dca7d67,
+                transferData.receiver,
+                bytes(
+                    string(
+                        abi.encodePacked(
+                            "0", // this is notification identity: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                            "+", // segregator
+                            "3", // this is payload type: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/payload (1, 3 or 4) = (Broadcast, targetted or subset)
+                            "+", // segregator
+                            "Upload your hash", // this is notificaiton title
+                            "+", // segregator
+                            "Please upload your account information hash." // notification body
+                        )
+                    )
+                )
+            );
 
         room.status = 2;
 
@@ -192,6 +232,25 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
                 transferData.receiverAccountHash = _ipfsHash;
                 transferData.status = 1;
 
+                IPUSHCommInterface(0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa)
+                    .sendNotification(
+                        0x2A346532cA75Be7e7227d258C477Da275dca7d67,
+                        transferData.sender,
+                        bytes(
+                            string(
+                                abi.encodePacked(
+                                    "0", // this is notification identity: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                                    "+", // segregator
+                                    "3", // this is payload type: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/payload (1, 3 or 4) = (Broadcast, targetted or subset)
+                                    "+", // segregator
+                                    "Receiver hash uploaded.", // this is notificaiton title
+                                    "+", // segregator
+                                    "Please upload tx information hash." // notification body
+                                )
+                            )
+                        )
+                    );
+
                 emit ReceiverHashUploaded(_roomId, _ipfsHash, msg.sender);
 
                 break;
@@ -216,6 +275,26 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
 
                 transferData.senderTxHash = _ipfsHash;
                 transferData.status = 2;
+
+                IPUSHCommInterface(0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa)
+                    .sendNotification(
+                        0x2A346532cA75Be7e7227d258C477Da275dca7d67,
+                        transferData.receiver,
+                        bytes(
+                            string(
+                                abi.encodePacked(
+                                    "0", // this is notification identity: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                                    "+", // segregator
+                                    "3", // this is payload type: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/payload (1, 3 or 4) = (Broadcast, targetted or subset)
+                                    "+", // segregator
+                                    "Sender tx hash uploaded.", // this is notificaiton title
+                                    "+", // segregator
+                                    "Sender payment completed." // notification body
+                                )
+                            )
+                        )
+                    );
+
                 emit SenderHashUploaded(_roomId, _ipfsHash, msg.sender);
                 break;
             }
@@ -241,6 +320,25 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
                 transferData.recieverAccountHashForInsider = _ipfsHash;
                 transferData.status = 3;
 
+                IPUSHCommInterface(0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa)
+                    .sendNotification(
+                        0x2A346532cA75Be7e7227d258C477Da275dca7d67,
+                        room.insider,
+                        bytes(
+                            string(
+                                abi.encodePacked(
+                                    "0", // this is notification identity: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                                    "+", // segregator
+                                    "3", // this is payload type: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/payload (1, 3 or 4) = (Broadcast, targetted or subset)
+                                    "+", // segregator
+                                    "You have new tx.", // this is notificaiton title
+                                    "+", // segregator
+                                    "Please submit your answser." // notification body
+                                )
+                            )
+                        )
+                    );
+
                 emit ReceiverTxVerified(_roomId, _ipfsHash, msg.sender);
                 break;
             }
@@ -263,6 +361,26 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
 
         transferData.insiderAnswer = _checked;
         transferData.status = 4;
+
+        IPUSHCommInterface(0xb3971BCef2D791bc4027BbfedFb47319A4AAaaAa)
+            .sendNotification(
+                0x2A346532cA75Be7e7227d258C477Da275dca7d67,
+                transferData.receiver,
+                bytes(
+                    string(
+                        abi.encodePacked(
+                            "0", // this is notification identity: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/identity/payload-identity-implementations
+                            "+", // segregator
+                            "3", // this is payload type: https://docs.epns.io/developers/developer-guides/sending-notifications/advanced/notification-payload-types/payload (1, 3 or 4) = (Broadcast, targetted or subset)
+                            "+", // segregator
+                            "Insider verification.", // this is notificaiton title
+                            "+", // segregator
+                            "Please verify insider's answer." // notification body
+                        )
+                    )
+                )
+            );
+
         emit TxCheckedByInsider(_roomId, _transferIndex, _checked, msg.sender);
     }
 
