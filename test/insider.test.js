@@ -96,7 +96,7 @@ describe("Insider", async () => {
     assert.equal(Number(room.method), method, "method is incorrect");
   });
 
-  it("test joinVolunteers", async () => {
+  it("test joinWitness", async () => {
     let {
       account1,
       account2,
@@ -111,46 +111,46 @@ describe("Insider", async () => {
     const roomId = 1;
 
     await insiderInstance.connect(account2).createRoom(method);
-    // joinVolunteers;
+    // joinWitness;
 
-    //1st volunteers join
-    await insiderInstance.connect(account3).joinVolunteers(roomId);
+    //1st witness join
+    await insiderInstance.connect(account3).joinWitness(roomId);
 
     assert.equal(
-      await insiderInstance.getRoomVolunteers(roomId, 0),
+      await insiderInstance.getRoomWitnesses(roomId, 0),
       account3.address,
-      "first volunteer is incorrect"
+      "first witness is incorrect"
     );
 
-    //2nd volunteers join
-    await insiderInstance.connect(account4).joinVolunteers(roomId);
+    //2nd witness join
+    await insiderInstance.connect(account4).joinWitness(roomId);
 
     assert.equal(
-      await insiderInstance.getRoomVolunteers(roomId, 1),
+      await insiderInstance.getRoomWitnesses(roomId, 1),
       account4.address,
-      "2nd volunteer is incorrect"
+      "2nd witness is incorrect"
     );
 
-    //3rd volunteers join
-    await insiderInstance.connect(account5).joinVolunteers(roomId);
+    //3rd witness join
+    await insiderInstance.connect(account5).joinWitness(roomId);
 
     assert.equal(
-      await insiderInstance.getRoomVolunteers(roomId, 2),
+      await insiderInstance.getRoomWitnesses(roomId, 2),
       account5.address,
-      "3rd volunteer is incorrect"
+      "3rd witness is incorrect"
     );
 
     const roomBeforeStart = await insiderInstance.rooms(roomId);
 
     assert.equal(Number(roomBeforeStart.status), 0);
 
-    //4th volunteers join
-    await insiderInstance.connect(account6).joinVolunteers(roomId);
+    //4th witness join
+    await insiderInstance.connect(account6).joinWitness(roomId);
 
     assert.equal(
-      await insiderInstance.getRoomVolunteers(roomId, 3),
+      await insiderInstance.getRoomWitnesses(roomId, 3),
       account6.address,
-      "4th volunteer is incorrect"
+      "4th witness is incorrect"
     );
 
     const addresses = [
@@ -173,7 +173,7 @@ describe("Insider", async () => {
     assert.isTrue(addresses.includes(transferData2.receiver));
   });
 
-  it("test joinVolunteers", async () => {
+  it("test insider verification process", async () => {
     let {
       account1,
       account2,
@@ -194,17 +194,17 @@ describe("Insider", async () => {
 
     const roomData = await insiderInstance.rooms(roomId);
 
-    //1st volunteers join
-    await insiderInstance.connect(account3).joinVolunteers(roomId);
+    //1st witness join
+    await insiderInstance.connect(account3).joinWitness(roomId);
 
-    //2nd volunteers join
-    await insiderInstance.connect(account4).joinVolunteers(roomId);
+    //2nd witness join
+    await insiderInstance.connect(account4).joinWitness(roomId);
 
-    //3rd volunteers join
-    await insiderInstance.connect(account5).joinVolunteers(roomId);
+    //3rd witness join
+    await insiderInstance.connect(account5).joinWitness(roomId);
 
-    //4th volunteers join
-    await insiderInstance.connect(account6).joinVolunteers(roomId);
+    //4th witness join
+    await insiderInstance.connect(account6).joinWitness(roomId);
 
     const accounts = [account3, account4, account5, account6];
 

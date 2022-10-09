@@ -28,10 +28,10 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
     }
 
     struct RoomData {
-        uint8 status; // 0 => pending for volunteers join // 1 => volunteers must transfer to each other
+        uint8 status; // 0 => pending for witness join // 1 => witness must transfer to each other
         uint256 method;
         address insider;
-        address[] volunteers;
+        address[] witnesses;
         mapping(uint256 => TransferData) transfer;
         uint8 insiderScore;
     }
@@ -100,24 +100,24 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
         emit RoomCreated(roomId.current(), _method, msg.sender);
     }
 
-    function joinVolunteers(uint256 _roomId) external override {
+    function joinWitness(uint256 _roomId) external override {
         RoomData storage room = rooms[_roomId];
 
         require(room.status == 0, "room is full.");
 
-        room.volunteers.push(msg.sender);
+        room.witnesses.push(msg.sender);
 
-        emit VolunteersJoined(_roomId, msg.sender, room.volunteers.length);
+        emit WitnessJoined(_roomId, msg.sender, room.witnesses.length);
 
-        if (room.volunteers.length == 4) {
+        if (room.witnesses.length == 4) {
             uint256 firstSender = uint256(
                 keccak256(
                     abi.encode(
                         room.insider,
-                        room.volunteers[0],
-                        room.volunteers[1],
-                        room.volunteers[2],
-                        room.volunteers[3]
+                        room.witnesses[0],
+                        room.witnesses[1],
+                        room.witnesses[2],
+                        room.witnesses[3]
                     )
                 )
             ) % 4;
@@ -126,15 +126,15 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
 
             transferData = room.transfer[0];
 
-            transferData.sender = room.volunteers[firstSender];
+            transferData.sender = room.witnesses[firstSender];
 
-            transferData.receiver = room.volunteers[(firstSender + 1) % 4];
+            transferData.receiver = room.witnesses[(firstSender + 1) % 4];
 
             transferData = room.transfer[1];
 
-            transferData.sender = room.volunteers[(firstSender + 2) % 4];
+            transferData.sender = room.witnesses[(firstSender + 2) % 4];
 
-            transferData.receiver = room.volunteers[(firstSender + 3) % 4];
+            transferData.receiver = room.witnesses[(firstSender + 3) % 4];
 
             room.status = 1;
 
@@ -282,12 +282,12 @@ contract Insider is IInsider, Initializable, UUPSUpgradeable {
         }
     }
 
-    function getRoomVolunteers(uint256 _roomId, uint256 _index)
+    function getRoomWitnesses(uint256 _roomId, uint256 _index)
         external
         view
         returns (address)
     {
-        return rooms[_roomId].volunteers[_index];
+        return rooms[_roomId].witnesses[_index];
     }
 
     function getRoomTransferData(uint256 _roomId, uint256 _transferId)
